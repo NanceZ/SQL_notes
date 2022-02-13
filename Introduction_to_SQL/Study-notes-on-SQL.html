@@ -1501,18 +1501,29 @@ div.tocify {
 <div id="common-protocals" class="section level3">
 <h3>Common protocals</h3>
 <ul>
-<li><p>Always capitalise SQL comments to distinguish them from the fields and dataset names.</p></li>
-<li><p>Always add a semi-colon after each query.</p></li>
+<li>Always add a semi-colon after each query.</li>
+<li><a href="https://www.sqlstyle.guide">Holywell’s SQL style guide</a></li>
 </ul>
 </div>
 <div id="selecting-columns" class="section level3">
 <h3>SELECTing columns</h3>
 <ul>
-<li><p>If you only want to return a certain number of results, you can use the LIMIT keyword to limit the number of rows returned: <code>SELECT * FROM people LIMIT 10;</code></p></li>
 <li><p><code>SELECT DISTINCT language FROM films;</code> is useful to check how many distinct languages are represented in the database.</p></li>
 <li><p><code>SELECT COUNT(*) FROM people;</code> lets you count the number of entities in the database. However, if you want to count the number of <strong>non-missing</strong> values in a particular column, you can call <code>COUNT()</code> on just that column. <code>SELECT COUNT(birthdate) FROM people;</code>. <strong>If you do <code>COUNT() WHERE IS NULL</code> you will get 0.</strong></p></li>
 <li><p><code>SELECT COUNT(DISTINCT birthdate) FROM people;</code> lets you count the distinct birthdates. <strong>Note that SQL does not use UNIQUE.</strong></p></li>
+<li><p>Subqueries in SELECT statements generate a single value that allow you to pass an aggregate value down a data frame.</p></li>
 </ul>
+<pre class="sql"><code>SELECT 
+    name AS league,
+    -- Select and round the league&#39;s total goals
+    round(avg(m.home_goal + m.away_goal), 2) AS avg_goals,
+    -- Select &amp; round the average total goals across all leagues for the season
+    (SELECT round(avg(home_goal + away_goal), 2) 
+     FROM match
+     where season = &#39;2013/2014&#39;) AS overall_avg
+FROM league 
+WHERE season = &#39;2013/2014&#39;
+GROUP BY league;</code></pre>
 </div>
 <div id="filtering-results" class="section level3">
 <h3>Filtering results</h3>

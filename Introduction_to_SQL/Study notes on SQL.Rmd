@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Common protocals  
 
 * Always add a semi-colon after each query.
+* [Holywell's SQL style guide](https://www.sqlstyle.guide)
 
 ### SELECTing columns
 
@@ -23,6 +24,22 @@ knitr::opts_chunk$set(echo = TRUE)
 * `SELECT COUNT(*) FROM people;` lets you count the number of entities in the database. However, if you want to count the number of **non-missing** values in a particular column, you can call `COUNT()` on just that column. `SELECT COUNT(birthdate) FROM people;`. **If you do `COUNT() WHERE IS NULL` you will get 0.**
 
 * `SELECT COUNT(DISTINCT birthdate) FROM people;` lets you count the distinct birthdates. **Note that SQL does not use UNIQUE.**
+
+* Subqueries in SELECT statements generate a single value that allow you to pass an aggregate value down a data frame. 
+
+```{sql subqueries_in_select, eval=FALSE}
+SELECT 
+	name AS league,
+    -- Select and round the league's total goals
+    round(avg(m.home_goal + m.away_goal), 2) AS avg_goals,
+    -- Select & round the average total goals across all leagues for the season
+    (SELECT round(avg(home_goal + away_goal), 2) 
+     FROM match
+     where season = '2013/2014') AS overall_avg
+FROM league 
+WHERE season = '2013/2014'
+GROUP BY league;
+```
 
 ### Filtering results
 
@@ -300,6 +317,30 @@ SELECT  season,
 FROM match 
 GROUP BY season;
 ```
+
+### Correlated subqueries
+Correlated subqueries are a special kind of subquery that use values from the **outer query** in order to generate the final results. **The subquery is re-executed each time a new row in the final data set is returned, in order to properly generate each new piece of information.** Correlated subqueries are used for special types of calculations, such as advanced joining, filtering, and evaluating of data in the database.
+
+A correlated subquery can be used here in lieu of a join. The following two queries are equivalent: take a look at the outer query first. The name of the country is selected from the country table, aliased as "c". The second column selected is a **scalar subquery (single number)**, selecting the average total goals scored across all seasons from the match table. You'll notice that the WHERE clause asks SQL to return values where the inner, match table's country_id column matches the c.id column in the outer query's country table. This way, the entire join is replaced, and the results are identical.
+
+```{sql simple_sub, eval=FALSE}
+SELECT  c.name AS country,
+    AVG(m.home_goal + m.away_goal) AS avg_goals
+FROM country AS c
+LEFT JOIN matchAS m
+ON c.id = m.country_id
+GROUPBY country;
+```
+```{sql correlated, eval=FALSE}
+
+SELECT  c.name AS country,  
+  ( SELECT AVG(home_goal + away_goal)
+    FROM match AS m 
+    WHERE m.country_id = c.id) AS avg_goals
+FROM country AS c
+GROUPBY country;
+```
+
 
 ### Window funcitons
 
