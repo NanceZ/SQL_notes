@@ -18,8 +18,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### SELECTing columns
 
-* If you only want to return a certain number of results, you can use the LIMIT keyword to limit the number of rows returned: `SELECT * FROM people LIMIT 10;`
-
 * `SELECT DISTINCT language FROM films;` is useful to check how many distinct languages are represented in the database. 
 
 * `SELECT COUNT(*) FROM people;` lets you count the number of entities in the database. However, if you want to count the number of **non-missing** values in a particular column, you can call `COUNT()` on just that column. `SELECT COUNT(birthdate) FROM people;`. **If you do `COUNT() WHERE IS NULL` you will get 0.**
