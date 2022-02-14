@@ -338,16 +338,45 @@ SELECT  c.name AS country,
     FROM match AS m 
     WHERE m.country_id = c.id) AS avg_goals
 FROM country AS c
-GROUPBY country;
+GROUP BY country;
 ```
 
+### Common Table Expressions (CTE)
+
+Instead of wrapping subqueries inside, say the FROM statement, you name it using the WITH statement, and then reference it by name later in the FROM statement as if it were any other table in your database.
 
 ### Window funcitons
 
 * Window functions are a class of functions that perform calculations on a result set that has already been generated, also referred to as a "window". You can use window functions to perform aggregate calculations without having to group your data, just as you did with a subquery in SELECT. You can also use them to calculate information such as running totals, rankings, and moving averages.
 
-* Window functions are processed after the entire query except the final ORDER BY statement. 
+* Window functions are processed after the entire query except the final ORDER BY statement.Thus, the window function uses the result set to calculate information, as opposed to using the database directly. 
 
-* `OVER`
+* `OVER` the following two queries are equivalent
 
-* `RANK`
+```{sql over_window_1, eval=FALSE}
+SELECT date,  
+  (home_goal + away_goal) AS goals,  
+  (SELECT AVG(home_goal + away_goal) FROM match WHERE season = '2011/2012') 
+  AS overall_avg
+FROM match
+WHERE season = '2011/2012'
+```
+
+```{sql over_window_2, eval=FALSE}
+SELECT date,  
+  (home_goal + away_goal) AS goals,  
+  AVG(home_goal + away_goal) OVER() AS overall_avg
+FROM match
+WHERE season = '2011/2012'
+```
+
+
+* `RANK` A RANK simply creates a column numbering your data set from highest to lowest, or lowest to highest, based on a column that you specify. 
+
+```{sql rank_window_2, eval=FALSE}
+SELECT date,  
+  (home_goal + away_goal) AS goals,  
+  RANK () OVER(ORDER BY home_goal + away_goal DESC) AS goals_rank
+FROM match
+WHERE season = '2011/2012'
+```

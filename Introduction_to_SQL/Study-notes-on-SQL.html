@@ -1760,6 +1760,24 @@ LIMIT 10;</code></pre>
 FROM match 
 GROUP BY season;</code></pre>
 </div>
+<div id="correlated-subqueries" class="section level3">
+<h3>Correlated subqueries</h3>
+<p>Correlated subqueries are a special kind of subquery that use values from the <strong>outer query</strong> in order to generate the final results. <strong>The subquery is re-executed each time a new row in the final data set is returned, in order to properly generate each new piece of information.</strong> Correlated subqueries are used for special types of calculations, such as advanced joining, filtering, and evaluating of data in the database.</p>
+<p>A correlated subquery can be used here in lieu of a join. The following two queries are equivalent: take a look at the outer query first. The name of the country is selected from the country table, aliased as “c”. The second column selected is a <strong>scalar subquery (single number)</strong>, selecting the average total goals scored across all seasons from the match table. You’ll notice that the WHERE clause asks SQL to return values where the inner, match table’s country_id column matches the c.id column in the outer query’s country table. This way, the entire join is replaced, and the results are identical.</p>
+<pre class="sql"><code>SELECT  c.name AS country,
+    AVG(m.home_goal + m.away_goal) AS avg_goals
+FROM country AS c
+LEFT JOIN matchAS m
+ON c.id = m.country_id
+GROUPBY country;</code></pre>
+<pre class="sql"><code>
+SELECT  c.name AS country,  
+  ( SELECT AVG(home_goal + away_goal)
+    FROM match AS m 
+    WHERE m.country_id = c.id) AS avg_goals
+FROM country AS c
+GROUPBY country;</code></pre>
+</div>
 <div id="window-funcitons" class="section level3">
 <h3>Window funcitons</h3>
 <ul>
