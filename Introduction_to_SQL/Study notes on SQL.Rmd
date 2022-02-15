@@ -380,3 +380,43 @@ SELECT date,
 FROM match
 WHERE season = '2011/2012'
 ```
+
+* `PARTITTION BY` A partition allows you to calculate separate values for different categories established in a partition. This is one way to calculate different aggregate values within one column of data, and pass them down a data set, instead of having to calculate them in different columns. 
+
+``` {sql partition,eval=FALSE}
+SELECT date,
+  (home_goal + away_goal) AS goals,
+  AVG(home_goal + away_goal) OVER() AS overall_avg,
+  AVG(home_goal + away_goal) OVER(PARTITION BY season) AS season_avg
+FROM match;
+```
+
+* **Sliding window keywords** perform calculations relative to the current row of a data set. The basic syntax is `ROWS BETWEEN <start> AND <finish>`
+
+```{sql sliding_window,eval=FALSE}
+SELECT date,  
+      home_goal,  
+      away_goal,
+      SUM(home_goal)
+        OVER(ORDER BY date ROWS BETWEEN 
+--PRECEDING
+--FOLLOWING
+--UNBOUNDED PRECEDING
+--UNBOUNDED FOLLOWING
+--CURRENT ROW
+        UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total
+FROM match 
+WHERE hometeam_id = 8456 AND season = '2011/2012'
+```
+
+```{sql sliding_window_2_periods, eval=FALSE}
+SELECT date,
+    home_goal,
+    away_goal,
+    SUM(home_goal) 
+      OVER(ORDER BY date ROWS 
+        BETWEEN 1 PRECEDING AND CURRENT ROW) AS last2 
+FROM match
+WHERE hometeam_id = 8456 AND season = '2011/2012'
+```
+![](sliding window.png)
